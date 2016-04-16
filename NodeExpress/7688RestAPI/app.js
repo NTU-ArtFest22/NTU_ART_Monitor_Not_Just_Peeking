@@ -27,7 +27,7 @@ var do_auth = function(req, res, next) {
 
 app.all('*', do_auth);
 
-//routers
+//TODO: adopt different routers in different device
 var motors = require('./motors');
 app.use('/motors', motors);
 
