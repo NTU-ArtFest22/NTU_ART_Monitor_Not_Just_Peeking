@@ -13,9 +13,12 @@ app.use(helmet());
 
 var do_auth = function(req, res, next) {
   var credentials = basic_auth(req);
+  // console.log(credentials);
+  // console.log(req.get('Content-Type'));
+  // console.log(req.get('Authorization'));
   if (!credentials || credentials.name !== authInfo.ID || credentials.pass !== authInfo.PASS) {
     res.statusCode = 401;
-    res.setHeader('WWW-Authenticate', 'Basic realm="example"');
+    res.setHeader('WWW-Authenticate', 'Basic realm="ID and Password"');
     res.end('Access denied');
   } else {
     next();
