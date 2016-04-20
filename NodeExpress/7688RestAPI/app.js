@@ -1,4 +1,4 @@
-var port = 8000;
+var port = 8080;
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
@@ -13,6 +13,7 @@ app.use(helmet());
 
 var do_auth = function(req, res, next) {
   var credentials = basic_auth(req);
+  // console.log(req.body);
   // console.log(credentials);
   // console.log(req.get('Content-Type'));
   // console.log(req.get('Authorization'));
@@ -27,7 +28,7 @@ var do_auth = function(req, res, next) {
 
 app.all('*', do_auth);
 
-//TODO: adopt different routers in different device
+//TODO: use common handlers and for each device, create its own config.
 var motors = require('./motors');
 app.use('/motors', motors);
 

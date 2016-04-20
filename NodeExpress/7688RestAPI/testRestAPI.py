@@ -32,3 +32,12 @@ with open('./config/default.json') as configFile:
                              data = bodyData)
    
     print 'raw:' + response.text
+    
+    #json test
+    response = requests.post(url,
+                             auth = HTTPBasicAuth(configData["BasicAuth"]["ID"],configData["BasicAuth"]["PASS"]),
+                             json = bodyData)
+     
+    print 'json test:' + response.text
+                    
+    

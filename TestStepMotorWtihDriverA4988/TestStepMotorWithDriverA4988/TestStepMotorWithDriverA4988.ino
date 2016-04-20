@@ -25,7 +25,7 @@ void loop()
   digitalWrite(4, currentDir); // Set Dir high
   currentDir = HIGH - currentDir; //change dir
   Serial.println("Loop 200 steps (1 rev)");
-  for(x = 0; x < 20; x++) // Loop 200 times
+  for(x = 0; x < 40; x++) // Loop 200 times
   {
     digitalWrite(5,LOW); // Output high
     delay(1); // Wait
