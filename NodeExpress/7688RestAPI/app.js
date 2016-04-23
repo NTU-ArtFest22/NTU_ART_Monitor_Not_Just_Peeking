@@ -12,6 +12,8 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.use(helmet());
 
 var do_auth = function(req, res, next) {
+  //TODO: put time constraint
+  
   var credentials = basic_auth(req);
   // console.log(req.body);
   // console.log(credentials);
@@ -33,5 +35,5 @@ var motors = require('./motors');
 app.use('/motors', motors);
 
 app.listen(port, function () {
-  console.log('Example app listening on port ' + port);
+  console.log('7688 app listening on port ' + port);
 });
