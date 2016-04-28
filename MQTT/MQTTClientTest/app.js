@@ -1,15 +1,19 @@
-var serverAddr = '140.112.30.46';
-
+var serverAddr = '140.112.91.176';
 var mqtt    = require('mqtt');
-var client  = mqtt.connect('mqtt://' + serverAddr);
- 
-// var payload = JSON.stringify({
-//     sender: 'self'
-// });
- 
+var fs = require('fs');
+var authInfo = JSON.parse(fs.readFileSync('./authInfo.json'));
+var client  = mqtt.connect('mqtt://' + serverAddr, authInfo);
+
+var topic = 'robot123';
+var cmdBuf = {
+  servo: "test",
+  angle: "0"
+};
+
 client.on('connect', function () {
-  client.subscribe('/api/robots/cybot/commands/toggle');
-//   client.publish('toggle', 'Hello mqtt');
+  client.subscribe(topic);
+  client.publish(topic, 'for test');
+  console.log('subscribed');
 });
  
 client.on('message', function (topic, message) {
@@ -18,7 +22,7 @@ client.on('message', function (topic, message) {
 });
 
 var keypress = require('keypress');
- 
+var currentAngle = 10;
 // make `process.stdin` begin emitting "keypress" events 
 keypress(process.stdin);
  
@@ -29,7 +33,14 @@ process.stdin.on('keypress', function (ch, key) {
     process.exit();
   }
   else if(key.name == 't') {
-    client.publish('/api/robots/cybot/commands/toggle', null);
+    currentAngle += 10;
+    cmdBuf["angle"] = currentAngle.toString();
+    client.publish(topic, JSON.stringify(cmdBuf));
+  }
+  else if(key.name == 'g') {
+    currentAngle -= 10;
+    cmdBuf["angle"] = currentAngle.toString();
+    client.publish(topic, JSON.stringify(cmdBuf));
   }
 });
  

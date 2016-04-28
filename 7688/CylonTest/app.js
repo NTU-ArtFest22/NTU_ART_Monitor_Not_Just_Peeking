@@ -1,17 +1,25 @@
-console.log("www blink start...");
-
+var serverAddr = '140.112.30.46';
 var Cylon = require('cylon');
+
 Cylon.robot({
   connections: {
-    arduino: {adaptor: 'firmata', port: '/dev/ttyS0'}
+    // arduino: {adaptor: 'firmata', port: '/dev/ttyS0'}
+    mqtt: {adaptor: 'mqtt', host: 'mqtt://'+ serverAddr}
   },
 
   devices: {
-    led: {driver: 'led', pin: 13}
+    channel: { driver: 'mqtt', topic: 'robot123'}
   },
 
   work: function(my) {
-    every((1).second(), my.led.toggle);
+    console.log('start working and ready to send mqtt request');
+    my.channel.on('message', function(data) {
+      console.log("Message on 'channel': " + data);
+    });
+
+    my.channel.publish('testing');
+    // my.mqtt.publish('hello', 'testing');
+
   }
 
 }).start();
