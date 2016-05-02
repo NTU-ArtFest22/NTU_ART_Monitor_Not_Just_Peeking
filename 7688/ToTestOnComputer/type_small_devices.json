@@ -1,26 +1,13 @@
 [
     {
-        "id" : "123",
-        "type" : "large"
+        "id" : "456",
+        "type" : "small"
     },
     
     {
-        "name" : "eyeServo",
+        "name" : "baseServo",
         "driver" : "servo",
         "pin" : "10"
-    },
-    
-    //to use ACMotor
-    {
-        "name" : "baseServo_dirRelay",
-        "driver" : "relay",
-        "pin" : "12"
-    },
-    
-    {
-        "name" : "baseServo_powRelay",
-        "driver" : "relay",
-        "pin" : "11"
     },
     
     {
@@ -39,12 +26,6 @@
         "name" : "clapper_stepPin",
         "driver" : "direct-pin",
         "pin" : "4"
-    },
-    
-    {
-        "name" : "normalServo",
-        "driver" : "servo",
-        "pin" : "9"
     }
     
 ]

@@ -1,4 +1,4 @@
-var serverAddr = '140.112.91.176';
+var serverAddr = '140.112.91.176:1883';
 var mqtt = require('mqtt');
 var fs = require('fs');
 var authInfo = JSON.parse(fs.readFileSync('./authInfo.json'));

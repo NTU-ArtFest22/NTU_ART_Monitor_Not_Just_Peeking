@@ -11,34 +11,38 @@ var robotTypes = {
   large: "large"
 };
 
+var extend = require('util')._extend;
+var Cylon = require('cylon');
+var fs = require('fs');
+var serverAddr = '140.112.91.176';
+var serverPort = '1883';
+var deviceConfigJsonArray;
+var initConfig = {
+  channel: { driver: 'mqtt', topic: "defined later", connection: mqttAdaptorName }
+};
+
+var robotInfo = JSON.parse(fs.readFileSync('./robotInfo.json'));
+var robotID = robotInfo.id;
+var robotType = robotInfo.type;
+
+
 var os = require('os');
 var arduinoPort;
 if(is7688()) {
   arduinoPort = '/dev/ttyS0';
 }
 else if(isOSX()) {
-  arduinoPort = '/dev/tty.usbmodem1411';
+  arduinoPort = '/dev/tty.usbmodem1421';
 }
 else if(isLinux()) {
   arduinoPort = '/dev/ttyACM0';
 }
 
-var extend = require('util')._extend;
-var Cylon = require('cylon');
-var fs = require('fs');
-var serverAddr = '140.112.91.176';
-var serverPort = '1883';
-var robotID = '-1';
-var robotType = 'unknown';
-var deviceConfigJsonArray;
-var initConfig = {
-  channel: { driver: 'mqtt', topic: "defined later", connection: mqttAdaptorName }
-};
-var deviceConfig = parseDeviceConfig(initConfig, './devices.json');
+var deviceConfig = parseDeviceConfig(initConfig, getRobotDevicesConfigName(robotType));
 var phyCtrl = require("./physicalControl.js");
 var authInfo = JSON.parse(fs.readFileSync('./authInfo.json'));
 
-var robotCtrlClass = require(getRobotInfoFileName(robotType));
+var robotCtrlClass = require(getRobotCtrlFileName(robotType));
 var robotCtrl;
 
 var adaptorsToConnect = {
@@ -76,16 +80,17 @@ Cylon.robot({
   
 }).start();
 
+function getRobotDevicesConfigName(robotType) {
+  return "./type_" + robotType + "_devices.json";
+}
 
-function getRobotInfoFileName(robotType) {
+function getRobotCtrlFileName(robotType) {
   return "./type_" + robotType + "_robot.js";
 }
 
 function parseDeviceConfig(initConfig, filePath) {
   var content = fs.readFileSync(filePath);
   deviceConfigJsonArray = JSON.parse(content);
-  robotID = deviceConfigJsonArray[0]["id"];
-  robotType = deviceConfigJsonArray[0]["type"];
   initConfig.channel.topic = topicPrefix + robotID;
   var deviceConfig = extend({}, initConfig); //copy from init config
   

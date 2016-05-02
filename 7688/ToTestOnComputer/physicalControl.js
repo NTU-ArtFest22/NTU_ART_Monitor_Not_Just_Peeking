@@ -5,7 +5,7 @@ exports.turnServo = function (servo, data) {
         if(isNaN(angle)) {
             return false;
         }
-        console.log("turn to " + angle);
+        servo.angle(angle);
         return true;
     }
     catch(err) {
@@ -58,7 +58,6 @@ var ACMotorInfo = {
 exports.turnACMotor = function(dirRelay, powRelay, data) {
     try {
         var angle = Number(data['angle']);
-        console.log("turn angle in AC:" + angle);
         if(isNaN(angle)) {
             return false;
         }
@@ -69,13 +68,14 @@ exports.turnACMotor = function(dirRelay, powRelay, data) {
             clockwise = false;
         }
         var timeToRotate = angle / ACMotorInfo.angleSpeed;
-        powRelay.turnOn();
         if(clockwise) {
-            servo.angle(dirRelay.turnOn());
+            dirRelay.turnOn();
         }
         else {
-            servo.angle(dirRelay.turnOff());
+            dirRelay.turnOff();
         }
+        
+        powRelay.turnOn();
         setTimeout(function () {
             powRelay.turnOff();
         }, timeToRotate * 1000);

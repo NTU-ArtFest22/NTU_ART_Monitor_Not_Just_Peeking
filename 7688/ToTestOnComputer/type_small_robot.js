@@ -45,20 +45,12 @@ module.exports = function(noFirmata, firmata, devices, deviceConfig, channel) {
             var targetToCtrl = jsonObj["target"];
             setResponse(response, resType.success);
             if('baseServo' === targetToCtrl) {
-                var powRelay = config.mDevices['baseServo_powRelay'];
-                var dirRelay = config.mDevices['baseServo_dirRelay'];
-                if(!dirRelay || !powRelay) {
+                var baseServo = config.mDevices['baseServo'];
+                
+                if(!baseServo) {
                     setResponse(response, resType.targetNotExist); 
                 }
-                else if(!phyCtrl.turnACMotor(dirRelay,powRelay,jsonObj)) {
-                    setResponse(response, resType.wrongFormat);
-                }
-            }
-            else if('eyeServo' === targetToCtrl) {
-                var eyeServo = config.mDevices['eyeServo'];
-                if(!eyeServo) {
-                    setResponse(response, resType.targetNotExist);
-                }else if(!phyCtrl.turnContServo(eyeServo, jsonObj)) {
+                else if(!phyCtrl.turnContServo(baseServo,jsonObj)) {
                     setResponse(response, resType.wrongFormat);
                 }
             }
@@ -73,18 +65,10 @@ module.exports = function(noFirmata, firmata, devices, deviceConfig, channel) {
                     setResponse(response, resType.wrongFormat);
                 }
             }
-            else if('normalServo' === targetToCtrl) {
-                var normalServo = config.mDevices['normalServo'];
-                if(!normalServo) {
-                    setResponse(response, resType.targetNotExist);
-                }
-                else if(!phyCtrl.turnServo(normalServo, jsonObj)) {
-                    setResponse(response, resType.wrongFormat);
-                }
-            }
             else {
                 setResponse(response, resType.targetNotExist);
             }
+            
         }
         catch(err) {
             console.log(err);
@@ -101,13 +85,3 @@ module.exports = function(noFirmata, firmata, devices, deviceConfig, channel) {
     };
     
 };
-
-// if('normalServo' === targetToCtrl) {
-//     var normalServo = config.mDevices['normalServo'];
-//     if(!normalServo) {
-//         setResponse(response, resType.targetNotExist);
-//     }
-//     else if(!phyCtrl.turnServo(normalServo, jsonObj)) {
-//         setResponse(response, resType.wrongFormat);
-//     }
-// }
