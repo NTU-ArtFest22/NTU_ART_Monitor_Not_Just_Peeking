@@ -26,6 +26,7 @@ exports.turnContServo = function (servo, data) {
         if('rotate' in data) {
             if(data['rotate'] === 'stop') {
                 servo.angle(ContServoInfo.staticVal); //stop rotate
+                return true;
             }
             
             var timeToRotate = 0;
@@ -126,7 +127,11 @@ exports.turnACMotor = function(dirRelay, powRelay, data) {
 };
 
 var currentDir = 0;
-
+var clapperInfo = {
+    numMovesInADir : 60,
+    timeForReversing : 50,
+    totalRounds = 50
+};
 exports.triggerClapper = function(enablePin, dirPin, stepPin) {
     try {
         enablePin.digitalWrite(0);
@@ -137,7 +142,7 @@ exports.triggerClapper = function(enablePin, dirPin, stepPin) {
         var initStepState = 0;
         var toSetTimeOut = true;
         var intervalObj = setInterval(function () {
-            if(i >= 60) {
+            if(i >= clapperInfo.numMovesInADir) {
                 if(toSetTimeOut) {
                     toSetTimeOut = false;
                     setTimeout(function () {
@@ -146,11 +151,11 @@ exports.triggerClapper = function(enablePin, dirPin, stepPin) {
                         currentDir = 1 - currentDir;
                         dirPin.digitalWrite(currentDir);
                         round++;
-                        if(round >= 50) {
+                        if(round >= clapperInfo.totalRounds) {
                             clearInterval(intervalObj);
-                            enablePin.digitalWrite(1);
+                            enablePin.digitalWrite(1); //disable
                         }
-                    }, 50);  
+                    }, clapperInfo.timeForReversing);  
                 }
             } 
             else {   
