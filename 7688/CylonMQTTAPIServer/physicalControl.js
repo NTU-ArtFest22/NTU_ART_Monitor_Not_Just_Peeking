@@ -130,7 +130,7 @@ var currentDir = 0;
 var clapperInfo = {
     numMovesInADir : 60,
     timeForReversing : 50,
-    totalRounds = 50
+    totalRounds : 50
 };
 exports.triggerClapper = function(enablePin, dirPin, stepPin) {
     try {
