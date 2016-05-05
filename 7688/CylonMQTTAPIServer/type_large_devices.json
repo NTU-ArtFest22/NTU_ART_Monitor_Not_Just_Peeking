@@ -10,17 +10,16 @@
         "pin" : "10"
     },
     
-    //to use ACMotor
     {
         "name" : "baseServo_dirRelay",
         "driver" : "relay",
-        "pin" : "12"
+        "pin" : "2"
     },
     
     {
         "name" : "baseServo_powRelay",
         "driver" : "relay",
-        "pin" : "11"
+        "pin" : "3"
     },
     
     {
@@ -30,21 +29,21 @@
     },
     
     {
-        "name" : "clapper_dirPin",
+        "name" : "clapper_stepPin",
         "driver" : "direct-pin",
         "pin" : "5"
     },
-    
+
     {
-        "name" : "clapper_stepPin",
+        "name" : "clapper_dirPin",
         "driver" : "direct-pin",
         "pin" : "4"
     },
     
     {
-        "name" : "normalServo",
-        "driver" : "servo",
-        "pin" : "9"
+        "name" : "testRelay",
+        "driver" : "relay",
+        "pin" : "7"
     }
     
 ]

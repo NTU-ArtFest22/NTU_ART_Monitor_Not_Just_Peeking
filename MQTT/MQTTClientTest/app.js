@@ -5,11 +5,17 @@ var authInfo = JSON.parse(fs.readFileSync('./authInfo.json'));
 var client  = mqtt.connect('mqtt://' + serverAddr, authInfo);
 
 var topic = 'robot123';
+// var cmdBuf = {
+//   uid: "unknown",
+//   target: "eyeServo",
+//   rotate: "stop"
+// };
+
 var cmdBuf = {
   uid: "unknown",
-  target: "baseServo",
-  angle: "50"
+  target: "testRelay",
 };
+
 
 client.on('connect', function () {
   console.log("connected");
