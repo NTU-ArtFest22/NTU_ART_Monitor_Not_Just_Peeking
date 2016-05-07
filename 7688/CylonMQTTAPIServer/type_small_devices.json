@@ -1,8 +1,4 @@
 [
-    {
-        "id" : "456",
-        "type" : "small"
-    },
     
     {
         "name" : "baseServo",
@@ -26,6 +22,12 @@
         "name" : "clapper_dirPin",
         "driver" : "direct-pin",
         "pin" : "4"
+    },
+    
+    {
+        "name" : "testRelay",
+        "driver" : "relay",
+        "pin" : "7"
     }
     
 ]

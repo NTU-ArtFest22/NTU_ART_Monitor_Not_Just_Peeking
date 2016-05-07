@@ -4,7 +4,7 @@ var fs = require('fs');
 var authInfo = JSON.parse(fs.readFileSync('./authInfo.json'));
 var client  = mqtt.connect('mqtt://' + serverAddr, authInfo);
 
-var topic = 'robot123';
+var topic = 'robot12';
 var cmdBuf = {
   uid: "unknown",
   target: "eyeServo",
@@ -19,7 +19,7 @@ var cmdBuf = {
 
 client.on('connect', function () {
   console.log("connected");
-  cmdBuf.uid = client.options.clientId;
+  cmdBuf.uid = "showCase";
   client.subscribe(topic);
   client.publish(topic, JSON.stringify(cmdBuf));
 });
