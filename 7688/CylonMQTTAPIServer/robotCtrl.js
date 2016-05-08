@@ -1,4 +1,4 @@
-module.exports = function(firmata, robotInfo, devices, deviceConfig, channel, response) {
+module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient, channelName, response) {
     var phyCtrl = require("./physicalControl.js");
     var utilsClass = require("./myUtils.js");
     var utils = utilsClass();
@@ -8,12 +8,13 @@ module.exports = function(firmata, robotInfo, devices, deviceConfig, channel, re
     var mFirmata = firmata;
     var mDevices = devices;
     var mDeviceConfig = deviceConfig;
-    var mChannel = channel;
+    var mChannelName = channelName;
+    var MqttClient = mqttClient;
     var mResponse = response;
     
     var setResponseAndPublishIt = function(typeOfRes) {
         setResponse(mResponse, typeOfRes);
-        mChannel.publish(JSON.stringify(mResponse));
+        MqttClient.publish(mChannelName, JSON.stringify(mResponse));
     };
     
     var phyCtrlCallback = function(success, errMsg) {
@@ -23,7 +24,7 @@ module.exports = function(firmata, robotInfo, devices, deviceConfig, channel, re
         else {
             setResponse(mResponse, resType.selfDefinedFailedMsg, errMsg);
         }
-        mChannel.publish(JSON.stringify(mResponse));
+        MqttClient.publish(mChannelName, JSON.stringify(mResponse));
     };
     
     var routing = {};

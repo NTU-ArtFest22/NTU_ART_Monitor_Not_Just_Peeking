@@ -7,7 +7,7 @@ var client  = mqtt.connect('mqtt://' + serverAddr, authInfo);
 var topic = 'robot12';
 var cmdBuf = {
   uid: "unknown",
-  target: "eyeServo",
+  target: "baseServo",
   rotate: "start"
 };
 
@@ -19,7 +19,7 @@ var cmdBuf = {
 
 client.on('connect', function () {
   console.log("connected");
-  cmdBuf.uid = "showCase";
+  cmdBuf.uid = client.options.clientId;
   client.subscribe(topic);
   client.publish(topic, JSON.stringify(cmdBuf));
 });

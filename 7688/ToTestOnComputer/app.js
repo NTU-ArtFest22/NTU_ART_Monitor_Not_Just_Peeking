@@ -7,7 +7,6 @@ var serverPort = '1883';
 //constant
 var topicPrefix = 'robot';
 var firmataAdaptorName = 'firmata';
-var mqttAdaptorName = 'server';
 var deviceDriverKey = 'driver';
 var deviceNameKey = 'name';
 var devicePinKey = 'pin';
@@ -42,15 +41,17 @@ var normalPriorityTimeoutObj = null;
 
 var extend = require('util')._extend;
 var Cylon = require('cylon');
+var mqtt = require('mqtt');
+
 var fs = require('fs');
 var deviceConfigJsonArray = null;
 var initConfig = {
-  channel: { driver: 'mqtt', topic: "defined later", connection: mqttAdaptorName },
 };
 
 var robotInfo = JSON.parse(fs.readFileSync('./robotInfo.json'));
 var robotID = robotInfo.id;
 var robotType = robotInfo.type;
+var channelName = topicPrefix + robotID;
 
 var os = require('os');
 var arduinoPort;
@@ -72,13 +73,13 @@ var robotCtrlClass = require("./robotCtrl.js");
 var robotCtrl;
 
 var adaptorsToConnect = {
-    server: { 
-      adaptor: 'mqtt', 
-      host: 'mqtt://' + serverAddr + ':' + serverPort, 
-      username: authInfo.username, 
-      password: authInfo.password
-    }
 };
+
+var mqttOptions = extend({
+  reconnectPeriod: 500
+}, authInfo);
+
+var mqttClient = null;
 
 adaptorsToConnect[firmataAdaptorName] = {
   adaptor: 'firmata',
@@ -92,10 +93,32 @@ Cylon.robot({
   
   work: function(my) {
     console.log("start to work!");
+    mqttClient = mqtt.connect('mqtt://' + serverAddr + ':' + serverPort, mqttOptions);
+    mqttClient.on('connect', function() {
+      mqttClient.subscribe(channelName);
+      mqttClient.publish(channelName, JSON.stringify({
+        status: channelName + " connected"
+      }));
+      console.log("mqtt connected and subscribe " + channelName);
+    });
     
-    robotCtrl = robotCtrlClass(my.connections[firmataAdaptorName], robotInfo, my.devices, deviceConfig, my.channel, response);
+    robotCtrl = robotCtrlClass(my.connections[firmataAdaptorName], robotInfo, my.devices, deviceConfig, mqttClient, channelName, response);
+    
     var jsonObj = null;
-    my.channel.on('message', function(data) {
+    
+    mqttClient.on('reconnect', function() {
+      console.log("mqtt reconnecting...");
+    });
+    
+    mqttClient.on('close', function() {
+      console.log("mqtt just disconnected");
+    });
+    
+    mqttClient.on('offline', function() {
+      console.log("mqtt offline now");
+    });
+    
+    mqttClient.on('message', function(topic, data) {
       if(!(firmataAdaptorName in my.connections)) {
         console.log("please connect with firmata");
         return;
@@ -136,28 +159,21 @@ Cylon.robot({
           
         }
         else {
-          //queue the uid
-          // jsonObj[priorityKey] = clientQueue.size + 1;
-          // clientQueue.add(jsonObj);
           
           clientQueue.push(jsonObj);
           
           setResponse(response, resType.waiting);
-          my.channel.publish(JSON.stringify(response));
+          mqttClient.publish(channelName, JSON.stringify(response));
         }
         
       }
       catch(err) {
         console.log(err);
         setResponse(response, resType.selfDefinedFailedMsg, err.toString());
-        my.channel.publish(JSON.stringify(response));
+        mqttClient.publish(channelName, JSON.stringify(response));
       }
       
     });
-    
-    my.channel.publish(JSON.stringify({
-      status: (topicPrefix + robotID) + " connected"
-    }));
     
     var isRetrieving = false;
     setInterval(function() {
@@ -170,7 +186,7 @@ Cylon.robot({
         
         response.uid = currentServedClient.uid;
         setResponse(response, resType.isYourTurn);
-        my.channel.publish(JSON.stringify(response));
+        mqttClient.publish(channelName, JSON.stringify(response));
         
         isRetrieving = false;
         
@@ -192,14 +208,9 @@ function getRobotDevicesConfigName(robotType) {
   return "./type_" + robotType + "_devices.json";
 }
 
-function getRobotCtrlFileName(robotType) {
-  return "./type_" + robotType + "_robot.js";
-}
-
 function parseDeviceConfig(initConfig, filePath) {
   var content = fs.readFileSync(filePath);
   deviceConfigJsonArray = JSON.parse(content);
-  initConfig.channel.topic = topicPrefix + robotID;
   var deviceConfig = extend({}, initConfig); //copy from init config
   
   for(var i = 0;i < deviceConfigJsonArray.length;i++) {
