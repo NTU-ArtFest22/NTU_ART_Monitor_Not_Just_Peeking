@@ -37,7 +37,7 @@ var ContServoInfo = {
     angleSpeed: 360 / 2.0,
     normalClockwiseVal: 120,
     normalCounterClockwiseVal: 60,
-    staticVal: 91
+    staticVal: 80
 };
 
 exports.turnContServo = function (servo, data, callback) {

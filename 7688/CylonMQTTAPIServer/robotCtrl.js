@@ -93,7 +93,7 @@ module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient,
         var targetToCtrl = jsonObj["target"];
         
         if('baseServo' === targetToCtrl) {
-            var baseServo = config.mDevices['baseServo'];
+            var baseServo = mDevices['baseServo'];
             if(!baseServo) {
                 setResponseAndPublishIt(resType.targetNotExist);
             }
