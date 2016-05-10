@@ -1,7 +1,3 @@
-//params
-var firstPriorityNoInterruptTime = 10;
-var normalPriorityNoInterruptTime = 10;
-
 var serverAddr = '140.112.91.176';
 var serverPort = '1883';
 //constant
@@ -102,7 +98,7 @@ Cylon.robot({
       console.log("mqtt connected and subscribe " + channelName);
     });
     
-    robotCtrl = robotCtrlClass(my.connections[firmataAdaptorName], robotInfo, my.devices, deviceConfig, mqttClient, channelName, response);
+    robotCtrl = robotCtrlClass(my.connections[firmataAdaptorName], robotInfo, my.devices, deviceConfig, mqttClient, channelName, response, currentServedClient);
     
     var jsonObj = null;
     
@@ -148,15 +144,6 @@ Cylon.robot({
           
           robotCtrl.routing(jsonObj);
           
-          if(isSpecialClient) {
-            if(firstPriorityTimeoutObj) {
-              clearTimeout(firstPriorityTimeoutObj);
-            }
-            firstPriorityTimeoutObj = setTimeout(function() {
-              currentServedClient.uid = null;
-            },firstPriorityNoInterruptTime * 1000); 
-          }
-          
         }
         else {
           
@@ -189,13 +176,6 @@ Cylon.robot({
         mqttClient.publish(channelName, JSON.stringify(response));
         
         isRetrieving = false;
-        
-        if(normalPriorityTimeoutObj) {
-          clearTimeout(normalPriorityTimeoutObj);
-        }
-        normalPriorityTimeoutObj = setTimeout(function() {
-          currentServedClient.uid = null;
-        }, normalPriorityNoInterruptTime * 1000);
         
       }
     }, 10); //check every 10ms

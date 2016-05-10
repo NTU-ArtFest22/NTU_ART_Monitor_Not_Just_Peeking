@@ -1,4 +1,7 @@
-module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient, channelName, response) {
+module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient, channelName, response, currentServedClient) {
+    //params
+    var normalPriorityNoInterruptTime = 10;
+    
     var phyCtrl = require("./physicalControl.js");
     var utilsClass = require("./myUtils.js");
     var utils = utilsClass();
@@ -11,20 +14,30 @@ module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient,
     var mChannelName = channelName;
     var MqttClient = mqttClient;
     var mResponse = response;
+    var mCurrentServedClient = currentServedClient;
     
-    var setResponseAndPublishIt = function(typeOfRes) {
-        setResponse(mResponse, typeOfRes);
+    var timeoutObj = null;
+    
+    var setResponseAndPublishIt = function(typeOfRes, errMsg) {
+        setResponse(mResponse, typeOfRes, errMsg);
         MqttClient.publish(mChannelName, JSON.stringify(mResponse));
+        
+        if(timeoutObj) {
+          clearTimeout(timeoutObj);
+        }
+        timeoutObj = setTimeout(function() {
+          mCurrentServedClient.uid = null;
+        }, normalPriorityNoInterruptTime * 1000);
     };
     
     var phyCtrlCallback = function(success, errMsg) {
         if(success) {
-            setResponse(mResponse, resType.success);
+            setResponseAndPublishIt(resType.success, "");
         }
         else {
-            setResponse(mResponse, resType.selfDefinedFailedMsg, errMsg);
+            setResponseAndPublishIt(resType.selfDefinedFailedMsg, errMsg);
         }
-        MqttClient.publish(mChannelName, JSON.stringify(mResponse));
+        
     };
     
     var routing = {};
