@@ -62,7 +62,6 @@ else if(isLinux()) {
 }
 
 var deviceConfig = parseDeviceConfig(initConfig, getRobotDevicesConfigName(robotType));
-var phyCtrl = require("./physicalControl.js");
 var authInfo = JSON.parse(fs.readFileSync('./authInfo.json'));
 
 var robotCtrlClass = require("./robotCtrl.js");

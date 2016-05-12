@@ -1,5 +1,11 @@
-module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient, channelName, response) {
-    var phyCtrl = require("./physicalControl.js");
+module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient, channelName, response, currentServedClient) {
+    //params
+    var normalPriorityNoInterruptTime = 10;
+    
+    var outputInfo = {};
+    
+    var phyCtrlClass = require("./physicalControl.js");
+    var phyCtrl = phyCtrlClass();
     var utilsClass = require("./myUtils.js");
     var utils = utilsClass();
     var setResponse = utils.setResponse;
@@ -11,65 +17,60 @@ module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient,
     var mChannelName = channelName;
     var MqttClient = mqttClient;
     var mResponse = response;
+    var mCurrentServedClient = currentServedClient;
     
-    var setResponseAndPublishIt = function(typeOfRes) {
-        setResponse(mResponse, typeOfRes);
+    var timeoutObj = null;
+    
+    var setResponseAndPublishIt = function(typeOfRes, errMsg) {
+        setResponse(mResponse, typeOfRes, errMsg);
         MqttClient.publish(mChannelName, JSON.stringify(mResponse));
+        
+        if(timeoutObj) {
+          clearTimeout(timeoutObj);
+        }
+        timeoutObj = setTimeout(function() {
+          mCurrentServedClient.uid = null;
+        }, normalPriorityNoInterruptTime * 1000);
     };
     
     var phyCtrlCallback = function(success, errMsg) {
         if(success) {
-            setResponse(mResponse, resType.success);
+            setResponseAndPublishIt(resType.success, "");
         }
         else {
-            setResponse(mResponse, resType.selfDefinedFailedMsg, errMsg);
+            setResponseAndPublishIt(resType.selfDefinedFailedMsg, errMsg);
         }
-        MqttClient.publish(mChannelName, JSON.stringify(mResponse));
+        
     };
     
     var routing = {};
+    var loopInfo = null;
+    
+    if(robotInfo.type === "large") {
+        outputInfo["baseServo"] = phyCtrl.ACMotor(mDevices['baseServo_dirRelay'], mDevices['baseServo_powRelay']);
+        outputInfo["eyeServo"] = phyCtrl.ContServo(mDevices['eyeServo']);
+        loopInfo = phyCtrl.setInnerLoop([outputInfo["baseServo"], outputInfo["eyeServo"]]);
+        
+    }
+    else if(robotInfo.type === "small") {
+        outputInfo["baseServo"] = phyCtrl.ContServo(mDevices['baseServo']);
+        loopInfo = phyCtrl.setInnerLoop([outputInfo["baseServo"]]);
+        
+    }
+    
+    outputInfo["clapper"] = phyCtrl.Clapper(mDevices['clapper_enablePin'], mDevices['clapper_dirPin'], mDevices['clapper_stepPin']);
     
     routing["large"] = function (jsonObj) {
         var targetToCtrl = jsonObj["target"];
         
         if('baseServo' === targetToCtrl) {
-            var powRelay = mDevices['baseServo_powRelay'];
-            var dirRelay = mDevices['baseServo_dirRelay'];
-            if(!dirRelay || !powRelay) {
-                setResponseAndPublishIt(resType.targetNotExist);
-            }
-            else {
-                phyCtrl.turnACMotor(dirRelay, powRelay, jsonObj, phyCtrlCallback);
-            }
+            this.baseServo.operate(jsonObj, phyCtrlCallback);
         }
         else if('eyeServo' === targetToCtrl) {
-            var eyeServo = mDevices['eyeServo'];
-            if(!eyeServo) {
-                setResponseAndPublishIt(resType.targetNotExist);
-            }
-            else {
-                phyCtrl.turnContServo(eyeServo, jsonObj, phyCtrlCallback);
-            }
+            this.eyeServo.operate(jsonObj, phyCtrlCallback);
         }
         else if('clapper' === targetToCtrl) {
-            var enablePin = mDevices['clapper_enablePin'];
-            var dirPin = mDevices['clapper_dirPin'];
-            var stepPin = mDevices['clapper_stepPin'];
-            if(!enablePin || !dirPin || !stepPin) {
-                setResponseAndPublishIt(resType.targetNotExist);
-            }
-            else {
-                phyCtrl.triggerClapper(enablePin, dirPin, stepPin, phyCtrlCallback);
-            }
-        }
-        else if('testRelay' === targetToCtrl) {
-            var relay = mDevices['testRelay'];
-            if(!relay) {
-                setResponseAndPublishIt(resType.targetNotExist);
-            }
-            else if(!phyCtrl.relayTest(relay, null)) {
-                setResponse(mResponse, resType.wrongFormat);
-            }
+            this.clapper.operate(phyCtrlCallback);
         }
         else {
             setResponseAndPublishIt(resType.targetNotExist);
@@ -80,41 +81,18 @@ module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient,
         var targetToCtrl = jsonObj["target"];
         
         if('baseServo' === targetToCtrl) {
-            var baseServo = config.mDevices['baseServo'];
-            if(!baseServo) {
-                setResponseAndPublishIt(resType.targetNotExist);
-            }
-            else {
-                phyCtrl.turnContServo(baseServo, jsonObj, phyCtrlCallback);
-            }
+            this.baseServo.operate(jsonObj, phyCtrlCallback);
         }
         else if('clapper' === targetToCtrl) {
-            var enablePin = mDevices['clapper_enablePin'];
-            var dirPin = mDevices['clapper_dirPin'];
-            var stepPin = mDevices['clapper_stepPin'];
-            if(!enablePin || !dirPin || !stepPin) {
-                setResponseAndPublishIt(resType.targetNotExist);
-            }
-            else {
-                phyCtrl.triggerClapper(enablePin, dirPin, stepPin, phyCtrlCallback);
-            }
-        }
-        else if('testRelay' === targetToCtrl) {
-            var relay = mDevices['testRelay'];
-            if(!relay) {
-                setResponseAndPublishIt(resType.targetNotExist);
-            }
-            else if(!phyCtrl.relayTest(relay, null)) {
-                setResponseAndPublishIt(resType.wrongFormat);
-            }
+            this.clapper.operate(phyCtrlCallback);
         }
         else {
             setResponseAndPublishIt(resType.targetNotExist);
         }
     };
     
-    return {
-        routing: routing[robotInfo.type]
-    };
+    outputInfo["routing"] = routing[robotInfo.type];
+    
+    return outputInfo;
     
 };
