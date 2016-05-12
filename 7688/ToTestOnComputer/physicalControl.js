@@ -269,18 +269,20 @@ module.exports = function() {
         relayTest: relayTest,
         motorState: motorState,
         setInnerLoop: function(motors) {
-            var innerLoopPeriod = 0.1;
+            var innerLoopPeriod = 0.01;
             var mMotors = motors;
             var updateAngle = function(motorInfo, updatingPeriod) {
-                if(motorInfo.currentState === motorState.clockwise) {
-                    motorInfo.currentAngle += motorInfo.angleSpeed * updatingPeriod;            
-                }  
-                else if(motorInfo.currentState === motorState.counterClockwise) {
-                    motorInfo.currentAngle -= motorInfo.angleSpeed * updatingPeriod;
-                }
                 
-                if(motorInfo.currentAngle === motorInfo.maxAngle || motorInfo.currentAngle === motorInfo.minAngle) {
+                if(motorInfo.currentAngle >= motorInfo.maxAngle || motorInfo.currentAngle <= motorInfo.minAngle) {
                     motorInfo.stop();
+                }
+                else {
+                    if(motorInfo.currentState === motorState.clockwise) {
+                        motorInfo.currentAngle += (motorInfo.angleSpeed * updatingPeriod);            
+                    }  
+                    else if(motorInfo.currentState === motorState.counterClockwise) {
+                        motorInfo.currentAngle -= (motorInfo.angleSpeed * updatingPeriod);
+                    }    
                 }
                 
             };
