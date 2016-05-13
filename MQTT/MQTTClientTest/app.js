@@ -4,10 +4,10 @@ var fs = require('fs');
 var authInfo = JSON.parse(fs.readFileSync('./authInfo.json'));
 var client  = mqtt.connect('mqtt://' + serverAddr, authInfo);
 
-var topic = 'robot12';
+var topic = 'robot1234';
 var cmdBuf = {
   uid: "unknown",
-  target: "baseServo",
+  target: "eyeServo",
   rotate: "start"
 };
 

@@ -6,37 +6,6 @@ module.exports = function() {
         counterClockwise: 2  
     };
     
-    var turnNormalServo = function (servo, data, callback) {
-        var failedHandler = function(errMsg) {
-            if(callback) {
-                callback(false, errMsg);
-            }
-        };
-        
-        var succeedHandler = function() {
-            if(callback) {
-                callback(true);
-            }
-        };
-        
-        try {
-            var angle = Number(data['angle']);
-            if(isNaN(angle)) {
-                failedHandler('angle cannot be parsed');
-                return;
-            }
-            else {
-                servo.angle(angle);
-                succeedHandler();   
-            }
-        }
-        catch(err) {
-            console.log(err);
-            failedHandler(err.toString());
-        }
-        
-    };
-    
     var ContServo = function(servo) {
         return {
             servo: servo,
@@ -51,6 +20,7 @@ module.exports = function() {
             stop: function() {
                 this.servo.angle(this.staticVal); //stop rotate
                 this.currentState = motorState.still;
+                // console.log('stop in contServo');
             },
             
             operate: function (data, callback) {
@@ -69,8 +39,7 @@ module.exports = function() {
                 try {
                     if('rotate' in data) {
                         if(data['rotate'] === 'stop') {
-                            this.servo.angle(this.staticVal); //stop rotate
-                            this.currentState = motorState.still;
+                            this.stop();
                             succeedHandler();
                             return;
                         }
@@ -135,8 +104,7 @@ module.exports = function() {
                 try {
                     if('rotate' in data) {
                         if(data['rotate'] === 'stop') {
-                            this.powRelay.turnOff();
-                            this.currentState = motorState.still;
+                            this.stop();
                             succeedHandler();
                             return;
                         }
@@ -260,6 +228,36 @@ module.exports = function() {
         }
     };
     
+    var turnNormalServo = function (servo, data, callback) {
+        var failedHandler = function(errMsg) {
+            if(callback) {
+                callback(false, errMsg);
+            }
+        };
+        
+        var succeedHandler = function() {
+            if(callback) {
+                callback(true);
+            }
+        };
+        
+        try {
+            var angle = Number(data['angle']);
+            if(isNaN(angle)) {
+                failedHandler('angle cannot be parsed');
+                return;
+            }
+            else {
+                servo.angle(angle);
+                succeedHandler();   
+            }
+        }
+        catch(err) {
+            console.log(err);
+            failedHandler(err.toString());
+        }
+        
+    };
     
     return {
         turnNormalServo: turnNormalServo,
@@ -273,11 +271,11 @@ module.exports = function() {
             var mMotors = motors;
             var updateAngle = function(motorInfo, updatingPeriod) {
                 
-                if(motorInfo.currentAngle >= motorInfo.maxAngle || motorInfo.currentAngle <= motorInfo.minAngle) {
-                    motorInfo.stop();
-                }
-                else {
-                    if(motorInfo.currentState === motorState.clockwise) {
+                if(motorInfo.currentState != motorState.still) {
+                    if(motorInfo.currentAngle >= motorInfo.maxAngle || motorInfo.currentAngle <= motorInfo.minAngle) {
+                        motorInfo.stop();   
+                    }
+                    else if(motorInfo.currentState === motorState.clockwise) {
                         motorInfo.currentAngle += (motorInfo.angleSpeed * updatingPeriod);            
                     }  
                     else if(motorInfo.currentState === motorState.counterClockwise) {
