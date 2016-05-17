@@ -7,8 +7,9 @@ var client  = mqtt.connect('mqtt://' + serverAddr, authInfo);
 var topic = 'robot1234';
 var cmdBuf = {
   uid: "unknown",
-  target: "eyeServo",
-  rotate: "start"
+  target: "baseServo",
+  rotate: "start",
+  dir: "cclockwise"
 };
 
 // var cmdBuf = {

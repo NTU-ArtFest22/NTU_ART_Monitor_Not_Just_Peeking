@@ -7,13 +7,13 @@
     },
     
     {
-        "name" : "baseServo_dirRelay",
+        "name" : "baseServo_clockRelay",
         "driver" : "relay",
         "pin" : "2"
     },
     
     {
-        "name" : "baseServo_powRelay",
+        "name" : "baseServo_counterClockRelay",
         "driver" : "relay",
         "pin" : "3"
     },

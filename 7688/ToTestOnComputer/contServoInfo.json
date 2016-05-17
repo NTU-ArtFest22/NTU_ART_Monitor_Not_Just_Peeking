@@ -1,0 +1,8 @@
+{
+  "normalClockwiseVal": 70,
+  "normalCounterClockwiseVal": 90,
+  "staticVal": 82,
+  "angleSpeed": 90,
+  "maxAngle": 200,
+  "minAngle": -200
+}

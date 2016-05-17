@@ -47,7 +47,7 @@ module.exports = function(firmata, robotInfo, devices, deviceConfig, mqttClient,
     var loopInfo = null;
     
     if(robotInfo.type === "large") {
-        outputInfo["baseServo"] = phyCtrl.ACMotor(mDevices['baseServo_dirRelay'], mDevices['baseServo_powRelay']);
+        outputInfo["baseServo"] = phyCtrl.ACMotor(mDevices['baseServo_clockRelay'], mDevices['baseServo_counterClockRelay']);
         outputInfo["eyeServo"] = phyCtrl.ContServo(mDevices['eyeServo']);
         loopInfo = phyCtrl.setInnerLoop([outputInfo["baseServo"], outputInfo["eyeServo"]]);
         
