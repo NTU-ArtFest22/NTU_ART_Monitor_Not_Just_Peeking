@@ -307,7 +307,7 @@ module.exports = function() {
                 for(var i = 0;i < mMotors.length;i++) {
                     updateAngle(mMotors[i], innerLoopPeriod);
                 }
-            }, innerLoopPeriod);
+            }, innerLoopPeriod * 1000);
             
             return {
                 intervalObj: intervalObj
