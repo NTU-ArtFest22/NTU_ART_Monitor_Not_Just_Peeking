@@ -21,7 +21,6 @@ module.exports = function() {
             preState: motorState.still,
             currentAngle: 0,
             setState: function(state) {
-                // this.preState = this.currentState;
                 this.currentState = state;
             },
             
@@ -94,9 +93,7 @@ module.exports = function() {
             preState: motorState.still,
             currentAngle: 0,
             setState: function(state) {
-                // this.preState = this.currentState;
                 this.currentState = state;
-                
             },
             
             stop: function() {
@@ -288,7 +285,7 @@ module.exports = function() {
             var mMotors = motors;
             var updateAngle = function(motorInfo, updatingPeriod) {
                 if(motorInfo.currentState != motorState.still) {
-                    console.log('angle:' + motorInfo.currentAngle);
+                    // console.log('angle:' + motorInfo.currentAngle);
                     if(motorInfo.preState === motorState.still) { //start to move
                         if(motorInfo.currentAngle >= motorInfo.maxAngle) {
                             if(motorInfo.currentState === motorState.counterClockwise) {
