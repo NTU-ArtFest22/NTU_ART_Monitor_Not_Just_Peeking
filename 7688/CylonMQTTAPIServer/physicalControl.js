@@ -20,9 +20,14 @@ module.exports = function() {
             currentState: motorState.still,
             preState: motorState.still,
             currentAngle: 0,
+            setState: function(state) {
+                // this.preState = this.currentState;
+                this.currentState = state;
+            },
+            
             stop: function() {
                 this.servo.angle(this.staticVal); //stop rotate
-                this.currentState = motorState.still;
+                this.setState(motorState.still);
                 // console.log('stop in contServo');
             },
             
@@ -49,11 +54,11 @@ module.exports = function() {
                         else if(data['rotate'] === 'start') {
                             if(data['dir'] === 'clockwise') { //clockwise
                                 this.servo.angle(this.normalClockwiseVal);
-                                this.currentState = motorState.clockwise;   
+                                this.setState(motorState.clockwise);
                             }
                             else { //counter-clockwise
                                 this.servo.angle(this.normalCounterClockwiseVal);
-                                this.currentState = motorState.counterClockwise;
+                                this.setState(motorState.counterClockwise);
                             }
                             
                             succeedHandler();
@@ -88,10 +93,16 @@ module.exports = function() {
             currentState: motorState.still,
             preState: motorState.still,
             currentAngle: 0,
+            setState: function(state) {
+                // this.preState = this.currentState;
+                this.currentState = state;
+                
+            },
+            
             stop: function() {
                 this.clockRelay.turnOff();
                 this.counterClockRelay.turnOff();
-                this.currentState = motorState.still;
+                this.setState(motorState.still);
             },
             
             operate: function(data, callback) {
@@ -119,12 +130,12 @@ module.exports = function() {
                             if(data['dir'] === 'clockwise') { //clockwise
                                 this.clockRelay.turnOn();
                                 this.counterClockRelay.turnOff();
-                                this.currentState = motorState.clockwise;
+                                this.setState(motorState.clockwise);
                             }
                             else { //counter-clockwise
                                 this.counterClockRelay.turnOn();
                                 this.clockRelay.turnOff();
-                                this.currentState = motorState.counterClockwise;
+                                this.setState(motorState.counterClockwise);
                             }
                             
                             succeedHandler();
@@ -277,26 +288,45 @@ module.exports = function() {
             var mMotors = motors;
             var updateAngle = function(motorInfo, updatingPeriod) {
                 if(motorInfo.currentState != motorState.still) {
-                    // console.log('angle:' + motorInfo.currentAngle);
-                    if(motorInfo.preState === motorState.still) {
+                    console.log('angle:' + motorInfo.currentAngle);
+                    if(motorInfo.preState === motorState.still) { //start to move
                         if(motorInfo.currentAngle >= motorInfo.maxAngle) {
-                            motorInfo.currentAngle = motorInfo.maxAngle - 1;
+                            if(motorInfo.currentState === motorState.counterClockwise) {
+                                motorInfo.currentAngle -= (motorInfo.angleSpeed * updatingPeriod);
+                            }    
                         }
                         else if(motorInfo.currentAngle <= motorInfo.minAngle) {
-                            motorInfo.currentAngle = motorInfo.minAngle + 1;
+                            if(motorInfo.currentState === motorState.clockwise) {
+                                motorInfo.currentAngle += (motorInfo.angleSpeed * updatingPeriod);
+                            }
+                        }
+                        else { //in the interval [minAngle, maxAngle]
+                            if(motorInfo.currentState === motorState.clockwise) {
+                                motorInfo.currentAngle += (motorInfo.angleSpeed * updatingPeriod);            
+                            }  
+                            else if(motorInfo.currentState === motorState.counterClockwise) {
+                                motorInfo.currentAngle -= (motorInfo.angleSpeed * updatingPeriod);
+                            }  
                         }
                     }
-                    
-                    if(motorInfo.currentAngle >= motorInfo.maxAngle || motorInfo.currentAngle <= motorInfo.minAngle) {
-                        // console.log('it stopped');
-                        motorInfo.stop();   
+                    else { //is moving
+                        if( motorInfo.currentAngle >= motorInfo.maxAngle || 
+                            motorInfo.currentAngle <= motorInfo.minAngle) {
+                            // console.log('it stopped');
+                            motorInfo.stop();   
+                        }
+                        else if(motorInfo.currentState === motorState.clockwise) {
+                            motorInfo.currentAngle += (motorInfo.angleSpeed * updatingPeriod);            
+                        }  
+                        else if(motorInfo.currentState === motorState.counterClockwise) {
+                            motorInfo.currentAngle -= (motorInfo.angleSpeed * updatingPeriod);
+                        }  
                     }
-                    else if(motorInfo.currentState === motorState.clockwise) {
-                        motorInfo.currentAngle += (motorInfo.angleSpeed * updatingPeriod);            
-                    }  
-                    else if(motorInfo.currentState === motorState.counterClockwise) {
-                        motorInfo.currentAngle -= (motorInfo.angleSpeed * updatingPeriod);
-                    }    
+                    
+                      
+                }
+                else {
+                    motorInfo.stop();
                 }
                 
                 motorInfo.preState = motorInfo.currentState;
